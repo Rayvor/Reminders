@@ -112,7 +112,11 @@ namespace Reminder.Storage.Domain.Tests
                 completed = true;
             };
 
-            d.SendReminder = (model) => { isCalled = true; };
+            d.SendReminder = (model) => 
+            { 
+                isCalled = true;
+                Assert.IsNotNull(model);
+            };
 
             Assert.IsNotNull(d.SendReminder);
 
