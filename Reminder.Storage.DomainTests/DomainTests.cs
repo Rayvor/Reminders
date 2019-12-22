@@ -92,5 +92,45 @@ namespace Reminder.Storage.Domain.Tests
             Assert.AreEqual(isFailed, true);
             Assert.AreEqual(count, 1);
         }
+
+        [TestMethod()]
+        public void ReminderDelegate_Calls_Test()
+        {
+            var storage = new InMemoryStorage();
+            Domain d = new Domain(storage);
+
+            bool completed = false;
+            bool isCalled = false;
+
+            d.OnFailedSend += (o, e) =>
+            {
+                completed = true;
+            };
+
+            d.OnSuccesSend += (o, e) =>
+            {
+                completed = true;
+            };
+
+            d.SendReminder = (model) => { isCalled = true; };
+
+            Assert.IsNotNull(d.SendReminder);
+
+            d.Add(new Models.AddReminderItemModel()
+            {
+                contactId = 123,
+                Message = "Test",
+                date = DateTime.Now + TimeSpan.FromSeconds(3)
+            });
+
+            while (!completed)
+            {
+                d.CheckAwaitingReminders();
+                d.SendReadyRemiders();
+                Thread.Sleep(10);
+            }
+
+            Assert.AreEqual(isCalled, true);
+        }
     }
 }
